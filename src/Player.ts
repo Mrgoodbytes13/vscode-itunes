@@ -26,11 +26,15 @@ export default class Player {
 
     private lastSongName: string = "";
     private artworkPath:  string = "";
+    private artworkSaved: boolean = false;
     private defaultArtwork: string = "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBkYXRhLW5hbWU9IkxheWVyIDEiIHZpZXdCb3g9IjAgMCA2NCA2NCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGRlZnM+CjxzdHlsZT4uY2xzLTF7ZmlsbDojZmZmO30uY2xzLTJ7ZmlsbDp1cmwoI2EpO308L3N0eWxlPgo8bGluZWFyR3JhZGllbnQgaWQ9ImEiIHgxPSIxMC4xIiB4Mj0iNTguNjciIHkxPSI0Ny4wNyIgeTI9IjEzLjY1IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIHN0b3AtY29sb3I9IiNkZTVkNzQiIG9mZnNldD0iMCIvPgo8c3RvcCBzdG9wLWNvbG9yPSIjN2UzMWYzIiBvZmZzZXQ9Ii41Ii8+CjxzdG9wIHN0b3AtY29sb3I9IiMxMmUyZWEiIG9mZnNldD0iMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+CjxyZWN0IGNsYXNzPSJjbHMtMSIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iNiIvPgo8cGF0aCBjbGFzcz0iY2xzLTIiIGQ9Ik0zMiwyLjUzQTI5LjQ3LDI5LjQ3LDAsMSwwLDYxLjQ3LDMyLDI5LjQ2LDI5LjQ2LDAsMCwwLDMyLDIuNTNabTAsMzcuMjVBNy43OCw3Ljc4LDAsMSwxLDM5Ljc4LDMyLDcuNzgsNy43OCwwLDAsMSwzMiwzOS43OFoiLz4KPC9zdmc+";
 
     private statusBarPositionOffset: number = 10;
 
-    private richTooltipTemplate: string = "[<img align=\"left\" src=\"$artwork\" width=\"64\"/>](command:itunes.open)<span><b>&nbsp;$name</b></span></br><span>&nbsp;$artist</span></br><span>&nbsp;$album</span>";
+    private richTooltipTemplateH: string = "[<img src=\"$artwork\" width=\"64\" align=\"left\"/>](command:itunes.open)<span><b>&nbsp;&nbsp;$name</b></span></br><span>&nbsp;&nbsp;$(organization)&nbsp;$artist</span></br><span>&nbsp;&nbsp;$(list-flat)&nbsp;$album</br></span>";
+
+    //private richTooltipTemplateV: string = "<div><img src=\"$artwork\" align=\"center\" width=\"200\"/></br><span>$namePad<b>$name</b></span></br><span>$artistPad$(organization) $artist</span></br><span>$albumPad$(list-flat) $album</br></span></div>";
+
 
     constructor() {
         Player.Instance = this;
@@ -107,14 +111,21 @@ export default class Player {
                                 // Save new artwork if song has changed
                                 if (this.lastSongName != currentTrack.name) {
                                     this.lastSongName = currentTrack.name;
-                                    this.artworkPath = this.defaultArtwork;
-
+                                    this.artworkSaved = false;
+                                    
                                     this.iTunes.saveArt()
                                         .then( ( bin: any ) => {
-                                            this.artworkPath = tmpdir() + "/vscode-itunes-coverart.jpg";
+                                            const path = tmpdir() + "/vscode-itunes-artwork-" + currentTrack.name + ".jpg";
 
-                                            unlinkSync(this.artworkPath);
-                                            writeFileSync(this.artworkPath, bin, { flag: 'w', });
+                                            if (this.artworkPath != "") {
+                                                unlinkSync(this.artworkPath);
+                                                this.artworkPath = "";
+                                            }
+
+                                            writeFileSync(path, bin, { flag: 'w', });
+
+                                            this.artworkPath = path;
+                                            this.artworkSaved = true;
                                         })
                                         .catch( ( err ) => {
                                             console.log( err );
@@ -211,25 +222,30 @@ export default class Player {
         let displayedTitle = title;
 
         if( titleStringLimit > 0 ) {
-            displayedTitle = title.substr(0, titleStringLimit);
+            displayedTitle = title.substring(0, titleStringLimit);
             if( displayedTitle.length < title.length ) {
-                displayedTitle += "...";
+                displayedTitle += "…";
             }
         }
 
-        let playIcon = "play";
-        let playCmd  = "play";
-        if (playing) {
-            playIcon = "primitive-square";
-            playCmd  = "pause";
+        let artwork = this.defaultArtwork;
+        if (this.artworkSaved) {
+            artwork = this.artworkPath;
         }
 
-        let richTooltip = new MarkdownString(this.richTooltipTemplate.replace("$name",     name)
-                                                                     .replace("$artist",   artist)
-                                                                     .replace("$album",    album)
-                                                                     .replace("$artwork",  this.artworkPath)
-                                                                     .replace("$playicon", playIcon)
-                                                                     .replace("$playcmd",  playCmd), true);
+        let scrubAlbum = album;
+        let scrubArtist = artist.substring(0, name.length);
+
+        if (album.length + 6 > name.length)
+            scrubAlbum = album.substring(0, name.length - 6) + "…";
+
+        if (artist.length + 6 > name.length)
+            scrubArtist = artist.substring(0, name.length - 6) + "…";
+
+        let richTooltip = new MarkdownString(this.richTooltipTemplateH.replace("$name",      name)
+                                                                      .replace("$artist",    scrubArtist)
+                                                                      .replace("$album",     scrubAlbum)
+                                                                      .replace("$artwork",   artwork), true);
 
         richTooltip.isTrusted   = true;
         richTooltip.supportHtml = true;

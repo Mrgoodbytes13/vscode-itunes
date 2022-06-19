@@ -2,7 +2,7 @@
     "name": "applemusic-vscode",
     "displayName": "iTunes & Apple Music Integration",
     "description": "Control Apple Music from within Visual Studio Code!",
-    "version": "0.18.0",
+    "version": "0.18.1",
     "publisher": "dnedry2",
     "icon": "images/icon.png",
     "engines": {

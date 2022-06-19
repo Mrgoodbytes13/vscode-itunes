@@ -2,3 +2,4 @@ out
 node_modules
 .vscode/tasks.json.old
 .DS_Store
+*.vsix
