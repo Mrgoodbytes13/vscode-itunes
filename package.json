@@ -6,7 +6,7 @@
     "publisher": "dnedry2",
     "icon": "images/icon.png",
     "engines": {
-        "vscode": "^1.5.0"
+        "vscode": "^1.59.1"
     },
     "repository": {
         "url": "https://github.com/dnedry2/vscode-itunes"
@@ -142,19 +142,21 @@
             }
         ]
     },
-    "extensionKind": ["ui"],
+    "extensionKind": [
+        "ui"
+    ],
     "scripts": {
         "vscode:prepublish": "tsc -p ./",
         "compile": "tsc -watch -p ./",
-        "postinstall": "node ./node_modules/vscode/bin/install",
+        "postinstall": "",
         "test": "node ./node_modules/vscode/bin/test"
     },
     "devDependencies": {
         "@types/mocha": "^2.2.32",
         "@types/node": "^6.0.40",
-        "mocha": "^5.2.0",
-        "typescript": "^2.0.3",
-        "vscode": "^1.1.37"
+        "@types/vscode": "^1.59.1",
+        "mocha": "^10.0.0",
+        "typescript": "^2.0.3"
     },
     "dependencies": {
         "applescript": "^1.0.0",

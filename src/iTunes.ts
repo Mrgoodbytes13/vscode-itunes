@@ -95,6 +95,10 @@ export default class iTunes {
             });
     }
 
+    public saveArt(): Promise<{}> {
+        return this.executeScript("saveArt", false);
+    }
+
     private getScript( filename, app: string = "music", language: string = "en" ): string {
         const file = path.resolve(__dirname, `../../scripts/${app}/${language}/${filename}.applescript`);
         if ( fs.existsSync( file ) ) {

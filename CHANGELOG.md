@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.18.0
+### Added
+* Rich tooltip with album art
+
 ## v0.17.0
 ### Forked
 
