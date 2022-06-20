@@ -2,7 +2,7 @@
 
 Control iTunes or Apple Music From Within With Visual Studio Code.
 
-This is a fork of the original from [PsykoSoldi3r](https://github.com/PsykoSoldi3r/vscode-itunes), as the project appears to have been abandoned. This version adds many settings and custom formatting options.
+This is a fork of the original from [PsykoSoldi3r](https://github.com/PsykoSoldi3r/vscode-itunes), as the project appears to have been abandoned. This version adds settings, custom formatting options, and rich tooltip support.
 
 <img src="https://raw.githubusercontent.com/dnedry2/vscode-itunes/master/images/Tooltip-V.png" width="256"> <img src="https://raw.githubusercontent.com/dnedry2/vscode-itunes/master/images/Tooltip-H.png" width="256">
 
