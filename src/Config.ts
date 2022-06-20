@@ -68,4 +68,9 @@ export default class Config {
         const showLD = this.workspace.get("showLikeDislike", true);
         return showLD;
     }
+
+    getVerticalLayout(): boolean {
+        const useV = this.workspace.get("useVerticalTooltip", true);
+        return useV;
+    }
 }

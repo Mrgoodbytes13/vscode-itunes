@@ -7,6 +7,7 @@ import { print } from "util";
 import { SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS } from "constants";
 import { writeFileSync, unlinkSync } from "fs";
 import { tmpdir } from "os";
+import { config } from "process";
 
 export default class Player {
     public static Instance: Player;
@@ -31,9 +32,12 @@ export default class Player {
 
     private statusBarPositionOffset: number = 10;
 
-    private richTooltipTemplateH: string = "[<img src=\"$artwork\" width=\"64\" align=\"left\"/>](command:itunes.open)<span><b>&nbsp;&nbsp;$name</b></span></br><span>&nbsp;&nbsp;$(organization)&nbsp;$artist</span></br><span>&nbsp;&nbsp;$(list-flat)&nbsp;$album</br></span>";
+    private spacer = "<img src=\"data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=\" width=\"350\" height=\"0\">";
 
-    //private richTooltipTemplateV: string = "<div><img src=\"$artwork\" align=\"center\" width=\"200\"/></br><span>$namePad<b>$name</b></span></br><span>$artistPad$(organization) $artist</span></br><span>$albumPad$(list-flat) $album</br></span></div>";
+    private richTooltipTemplateH: string = "[<img src=\"$artwork\" width=\"64\" align=\"left\"/>](command:itunes.open \"Open iTunes\")<span><b>&nbsp;&nbsp;$name</b></span></br><span>&nbsp;&nbsp;$(organization)&nbsp;$artist</span></br><span>&nbsp;&nbsp;$(list-flat)&nbsp;$album</span></br>";
+    private richTooltipControls: string  = "<h1>[$(thumbsup)](command:itunes.likeTrack \"Like track\")[$(thumbsdown)](command:itunes.dislikeTrack \"Dislike track\")&nbsp;&nbsp;&nbsp;&nbsp;[$(plus)](command:itunes.addTrack \"Add to library\")&nbsp;&nbsp;&nbsp;&nbsp;[$($shuffleIcon)](command:itunes.shuffle.$shuffleCmd)&nbsp;[$(chevron-left)](command:itunes.previousTrack \"Previous\")[$($playIcon)](command:itunes.$playCmd \"Play / Pause\")[$(chevron-right)](command:itunes.nextTrack \"Next\")&nbsp;[$($repeatIcon)](command:itunes.repeat.set.$repeatCmd)&nbsp;&nbsp;&nbsp;&nbsp;[$(mute)](command:itunes.volume \"Mute\")</h1>";
+
+    private richTooltipTemplateV: string = "[<img src=\"$artwork\" width=\"320\"/>](command:itunes.open \"Open iTunes\")</br><h3>$name</h3><span>$(organization)&nbsp;$artist</span></br><span>$(list-flat)&nbsp;$album</span></br>";
 
 
     constructor() {
@@ -126,13 +130,15 @@ export default class Player {
 
                                             this.artworkPath = path;
                                             this.artworkSaved = true;
+
+                                            this.forceUpdate();
                                         })
                                         .catch( ( err ) => {
                                             console.log( err );
                                         });
                                 }
 
-                                this.updateStatusText( currentTrack.artist, currentTrack.name, currentTrack.album, currentTrack.kind, currentTrack.state == "playing");
+                                this.updateStatusText( currentTrack.artist, currentTrack.name, currentTrack.album, currentTrack.kind, currentTrack.state === "playing", currentTrack.repeat_song, currentTrack.shuffle === "true");
 
                                 this.titleBarItem.show();
 
@@ -213,7 +219,8 @@ export default class Player {
             });
     }
 
-    private updateStatusText( artist: string, name: string, album: string, kind: MediaType, playing: boolean ) {
+    private updateStatusText( artist: string, name: string, album: string, kind: MediaType, playing: boolean, repeat: string, shuffle: boolean) {
+        const useVertLayout = Config.Instance.getVerticalLayout();
         const titleStringLimit = Config.Instance.getTitleStringLimit();
         const title = Config.Instance.getTrackFormat().replace("{name}", name)
                                                       .replace("{artist}", artist)
@@ -233,6 +240,7 @@ export default class Player {
             artwork = this.artworkPath;
         }
 
+        /*
         let scrubAlbum = album;
         let scrubArtist = artist.substring(0, name.length);
 
@@ -241,16 +249,45 @@ export default class Player {
 
         if (artist.length + 6 > name.length)
             scrubArtist = artist.substring(0, name.length - 6) + "…";
+*/
 
-        let richTooltip = new MarkdownString(this.richTooltipTemplateH.replace("$name",      name)
-                                                                      .replace("$artist",    scrubArtist)
-                                                                      .replace("$album",     scrubAlbum)
-                                                                      .replace("$artwork",   artwork), true);
+        let template = useVertLayout ? this.richTooltipTemplateV : this.richTooltipTemplateH;
+
+        let richTooltip = new MarkdownString(template.replace("$name",    name)
+                                                     .replace("$artist",  artist)
+                                                     .replace("$album",   album)
+                                                     .replace("$artwork", artwork), true);
 
         richTooltip.isTrusted   = true;
         richTooltip.supportHtml = true;
 
-        this.titleBarItem.text = displayedTitle;
+        let repeatCmd  = "";
+        let repeatIcon = "";
+        switch (repeat) {
+            case "all":
+                repeatCmd = "one \"Repeat: All\"";
+                repeatIcon = "debug-restart-frame"
+                break;
+
+            case "one":
+                repeatCmd = "off \"Repeat: One\"";
+                repeatIcon = "debug-restart"
+                break;
+
+            case "off":
+                repeatCmd = "all \"Repeat: Off\"";
+                repeatIcon = "sync-ignored"
+                break;
+        }
+
+        richTooltip.appendMarkdown(this.richTooltipControls.replace("$playCmd",     playing ? "pause" : "play")
+                                                           .replace("$playIcon",    playing ? "debug-pause" : "play")
+                                                           .replace("$repeatCmd",   repeatCmd)
+                                                           .replace("$repeatIcon",  repeatIcon)
+                                                           .replace("$shuffleCmd",  shuffle ? "off \"Turn shuffle off\"" : "on \"Turn shuffle on\"")
+                                                           .replace("$shuffleIcon", shuffle ? "git-compare" : "checklist"));
+
+        this.titleBarItem.text    = displayedTitle;
         this.titleBarItem.tooltip = richTooltip;
         this.titleBarItem.show();
     }
@@ -352,5 +389,9 @@ export default class Player {
         } else {
             this.iTunes.dislikeTrack();
         }
+    }
+
+    public forceUpdate(): void {
+        this.onUpdate();
     }
 }

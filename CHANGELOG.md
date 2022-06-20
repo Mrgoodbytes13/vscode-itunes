@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.19.0
+### Added
+* Media control buttons to tooltip
+* Vertical tooltip layout
+
 ## v0.18.0
 ### Added
 * Rich tooltip with album art

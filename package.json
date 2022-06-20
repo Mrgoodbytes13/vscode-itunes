@@ -137,6 +137,12 @@
                         "type": "boolean",
                         "default": true,
                         "description": "Show like and dislike buttons?"
+                    },
+                    "itunes.useVerticalTooltip": {
+                        "title": "Use vertical tooltip layout",
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Use the vertical (album art on top) tooltip layout?"
                     }
                 }
             }

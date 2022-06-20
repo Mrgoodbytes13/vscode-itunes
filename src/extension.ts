@@ -13,58 +13,72 @@ export function activate(context: vscode.ExtensionContext) {
 
     const commandPlay = vscode.commands.registerCommand('itunes.play', () => {
         player.play();
+        player.forceUpdate();
     });
 
     const commandPause = vscode.commands.registerCommand('itunes.pause', () => {
         player.pause();
+        player.forceUpdate();
     });
 
     const commandNextTrack = vscode.commands.registerCommand("itunes.nextTrack", () => {
         player.nextTrack();
+        player.forceUpdate();
     });
 
     const commandPreviousTrack = vscode.commands.registerCommand("itunes.previousTrack", () => {
         player.previousTrack();
+        player.forceUpdate();
     });
 
     const commandOpen = vscode.commands.registerCommand("itunes.open", () => {
         player.open();
+        player.forceUpdate();
     });
 
     const commandVolume = vscode.commands.registerCommand("itunes.volume", () => {
         player.volume();
+        player.forceUpdate();
     });
 
     const commandRepeatOne = vscode.commands.registerCommand("itunes.repeat.set.one", () => {
         player.setRepeat("One");
+        player.forceUpdate();
     });
 
     const commandRepeatOff = vscode.commands.registerCommand("itunes.repeat.set.off", () => {
         player.setRepeat("Off");
+        player.forceUpdate();
     });
 
     const commandRepeatAll = vscode.commands.registerCommand("itunes.repeat.set.all", () => {
         player.setRepeat("All");
+        player.forceUpdate();
     });
 
     const commandShuffleOn = vscode.commands.registerCommand("itunes.shuffle.on", () => {
         player.shuffleOn();
+        player.forceUpdate();
     });
 
     const commandShuffleOff = vscode.commands.registerCommand("itunes.shuffle.off", () => {
         player.shuffleOff();
+        player.forceUpdate();
     });
 
     const likeTrack = vscode.commands.registerCommand("itunes.likeTrack", () => {
         player.likeTrack();
+        player.forceUpdate();
     });
 
     const dislikeTrack = vscode.commands.registerCommand("itunes.dislikeTrack", () => {
         player.dislikeTrack();
+        player.forceUpdate();
     });
 
     const addTrack = vscode.commands.registerCommand("itunes.addTrack", () => {
         player.addTrack();
+        player.forceUpdate();
     });
 
     context.subscriptions.push( player );
